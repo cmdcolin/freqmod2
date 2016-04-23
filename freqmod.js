@@ -1,3 +1,5 @@
+// Usage node freqmod.js|play -c 1 -r 44100 -b 16 -q -t raw -e signed-integer -
+
 var buflen = 200000;
 var buf = new Uint16Array(buflen);
 
