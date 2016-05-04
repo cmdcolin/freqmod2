@@ -49,7 +49,7 @@ screen.key(['escape', 'C-c'], function() {
 });
 
 
-screen.key(['q','w','a','s','z','x','j','k','m','t','g','h'], function(ch) {
+screen.key(['q','w','a','s','z','x','j','k','m','t','g','b'], function(ch) {
     switch(ch) {
     case 'q': p.f1*=2; break;
     case 'w': p.f1/=2; break;
@@ -62,7 +62,7 @@ screen.key(['q','w','a','s','z','x','j','k','m','t','g','h'], function(ch) {
     case 'm': p.m=(p.m+1)%3; break;
     case 't': p.n1=(p.n1+1)%3; break;
     case 'g': p.n2=(p.n2+1)%3; break;
-    case 'h': p.n3=(p.n3+1)%3; break;
+    case 'b': p.n3=(p.n3+1)%3; break;
     }
 });
 
@@ -99,7 +99,6 @@ function triangle(pos) {
 
 var fun = [wave, square, triangle];
 
-console.log(p);
 var i = 0;
 Source.prototype._read = function (size) {
     var stat = ["osc2->osc1","osc3->osc2->osc1","osc3->osc1<-osc2"];
@@ -133,6 +132,7 @@ rs.pipe(myFile);
 
 log('o: save synth settings');
 log('m: change modulation mode');
+log('t,g,b: change osc1,2,3');
 log('j: I(t)*=2\tl: I(t)/=2');
 log('z: osc3*=2\tx: osc3/=2');
 log('a: osc2*=2\ts: osc2/=2');
