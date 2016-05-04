@@ -7,13 +7,14 @@ var Speaker = require('speaker');
 
 // params
 var A = 100; //amplitude
+var f = 440;
 
 
 
 
 // audio output to speaker
 var speaker = new Speaker({
-    channels: 1,          // 2 channels
+    channels: 2,          // 2 channels
     bitDepth: 16,         // 16-bit samples
     sampleRate: 44100     // 44,100 Hz sample rate
 });
@@ -53,14 +54,14 @@ inherits(Source, Readable);
 
 var i = 0;
 Source.prototype._read = function (size) {
-    status((new Date()).toISOString()+' '+size);
-    log('Writing '+size+' bytes');
+    status('Time: '+(new Date()).toISOString()+'\tBuffer: '+size +'\tf: '+f+'\tA: '+A);
     var arr = new Uint16Array(size);
-    for(var j = 0; j < size; j++) {
-        arr[j] = A*Math.sin((i+j)/40);
+    for(var j = 0; j < size; j+=2) {
+        var pos = (i+j)/(size*2);
+        arr[j] = A*Math.sin(pos*f);
+        arr[j+1] = A*Math.sin(pos*f);
     }
-    var buf1 = Buffer.from(arr); // copies the buffer
-    //console.log(buf1);
+    var buf1 = Buffer.from(arr);
     this.push(buf1);
     i+=size; 
 };
