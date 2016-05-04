@@ -13,7 +13,7 @@
 - Uses custom implementation of a NodeJS stream to output audio data to speaker
 - Also outputs audio to a raw wave file output.wav
 - Re-implementation of the C based freqmod synth
-
+- Save synth settings to .synthrc
 
 ## Links
 
