@@ -36,7 +36,6 @@ var speaker = new Speaker({
 });
 
 
-//var file = fs.createReadStream(args[0], { highWaterMark: 2 * 1024 });
 var file = fs.createReadStream(args[0]);
 var screen = blessed.screen(),
     body = blessed.box({
@@ -156,7 +155,6 @@ Upper.prototype._transform = function(chunk, encoding, callback) {
 log('here123');
 file.once('readable', function () {
     var myFile = fs.createWriteStream('output.wav');
-    //var rs = new Upper({highWaterMark: 2*1024});
     var rs = new Upper();
     file.pipe(rs);
     rs.pipe(speaker);
