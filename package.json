@@ -10,7 +10,9 @@
   "license": "ISC",
   "dependencies": {
     "blessed": "^0.1.81",
+    "fork-stream": "0.0.4",
     "lodash": "^4.11.2",
-    "speaker": "^0.3.0"
+    "speaker": "^0.3.0",
+    "wav": "^1.0.0"
   }
 }
