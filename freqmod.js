@@ -85,16 +85,16 @@ function log(text) {
 }
 
 
-var Transform = stream.Transform
+var Transform = stream.Transform;
 
 function Upper(options) {
-  // allow use without new
-  if (!(this instanceof Upper)) {
-    return new Upper(options);
-  }
+    // allow use without new
+    if (!(this instanceof Upper)) {
+        return new Upper(options);
+    }
 
-  // init Transform
-  Transform.call(this, options);
+    // init Transform
+    Transform.call(this, options);
 }
 util.inherits(Upper, Transform);
 
@@ -126,7 +126,7 @@ Upper.prototype._transform = function(chunk, encoding, callback) {
     for(var j = 0; j < size; j+=2) {
         var pos = (i+j)/(size*2);
         if(p.m == 0) {
-            arr[j]  = p.A * fun[p.n1](pos * p.f1 * p.I * fun[p.n2](pos * p.f2,j,arrb),j,arrb)
+            arr[j]  = p.A * fun[p.n1](pos * p.f1 * p.I * fun[p.n2](pos * p.f2,j,arrb),j,arrb);
             arr[j+1] = p.A * fun[p.n1](pos * p.f1 * p.I * fun[p.n2](pos * p.f2,j+1,arrb),j+1,arrb);
         }
         else if(p.m == 1) {
