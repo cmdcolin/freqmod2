@@ -87,16 +87,16 @@ function log(text) {
 
 var Transform = stream.Transform;
 
-function Upper(options) {
+function ModulateStream(options) {
     // allow use without new
-    if (!(this instanceof Upper)) {
-        return new Upper(options);
+    if (!(this instanceof ModulateStream)) {
+        return new ModulateStream(options);
     }
 
     // init Transform
     Transform.call(this, options);
 }
-util.inherits(Upper, Transform);
+util.inherits(ModulateStream, Transform);
 
 
 
@@ -114,7 +114,7 @@ function input(pos,j,arr) {
 }
 
 var i = 0;
-Upper.prototype._transform = function(chunk, encoding, callback) {
+ModulateStream.prototype._transform = function(chunk, encoding, callback) {
     var size = chunk.length;
     var fun = [wave, square, triangle, input];
     var stat = ['osc2->osc1','osc3->osc2->osc1','osc3->osc1<-osc2','osc1'];
@@ -150,12 +150,9 @@ Upper.prototype._transform = function(chunk, encoding, callback) {
 
 
 
-
-
-log('here123');
 file.once('readable', function () {
     var myFile = fs.createWriteStream('output.wav');
-    var rs = new Upper();
+    var rs = new ModulateStream();
     file.pipe(rs);
     rs.pipe(speaker);
     rs.pipe(myFile);
