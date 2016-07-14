@@ -51,12 +51,11 @@ var body = blessed.box({
 
 screen.append(body);
 
-screen.key(['escape', 'C-c'], function () {
-    return process.exit(0);
-});
+screen.key(['escape', 'C-c'], () => process.exit(0));
 
+var m = args[0] ? 4:3;
 
-screen.key(['q', 'w', 'a', 's', 'z', 'x', 'j', 'k', 'm', 't', 'g', 'b'], function (ch) {
+screen.key(['q', 'w', 'a', 's', 'z', 'x', 'j', 'k', 'm', 't', 'g', 'b'], (ch) => {
     switch (ch) {
     case 'q': p.f1 *= 2; break;
     case 'w': p.f1 /= 2; break;
@@ -66,20 +65,21 @@ screen.key(['q', 'w', 'a', 's', 'z', 'x', 'j', 'k', 'm', 't', 'g', 'b'], functio
     case 'x': p.f3 /= 2; break;
     case 'j': p.I *= 2; break;
     case 'k': p.I /= 2; break;
-    case 'm': p.m = (p.m + 1) % 4; break;
-    case 't': p.n1 = (p.n1 + 1) % 4; break;
-    case 'g': p.n2 = (p.n2 + 1) % 4; break;
-    case 'b': p.n3 = (p.n3 + 1) % 4; break;
+    case 'm': p.m = (p.m + 1) % m; break;
+    case 't': p.n1 = (p.n1 + 1) % m; break;
+    case 'g': p.n2 = (p.n2 + 1) % m; break;
+    case 'b': p.n3 = (p.n3 + 1) % m; break;
+    default: break;
     }
 });
 
-screen.key(['o'], function () {
+screen.key(['o'], () => {
     fs.writeFileSync('.synthrc', JSON.stringify(p, null, 2), 'utf8');
 });
 
 
 function status(text) {
-    body.setLine(0, '{blue-fg}' + text + '{/blue-fg}');
+    body.setLine(0, `{blue-fg} ${text} {/blue-fg}`);
     screen.render();
 }
 function log(text) {
@@ -114,8 +114,6 @@ function GeneratorStream(options) {
 }
 util.inherits(GeneratorStream, Generator);
 
-
-
 function wave(pos) {
     return Math.cos(pos);
 }
@@ -130,30 +128,28 @@ function input(pos, j, arr) {
 }
 
 var i = 0;
-ModulateStream.prototype._transform = function (size) {
+ModulateStream.prototype._transform = function (chunk, encoding, callback) {
     var size = chunk.length;
     var fun = [wave, square, triangle, input];
     var stat = ['osc2->osc1', 'osc3->osc2->osc1', 'osc3->osc1<-osc2', 'osc1'];
     var wtype = ['w', 's', 't', 'i'];
 
-    status(util.format('%s\tbuf: %d\tfreq: %d/%d/%d\tA: %d\tI(t): %d\tmode: %s\ttype: %s/%s/%s', (new Date()).toISOString(), size, p.f1, p.f2, p.f3, p.A, p.I, stat[p.m], wtype[p.n1], wtype[p.n2], wtype[p.n3]));
+    status(util.format('%s\tbuf: %d\tfreq: %d/%d/%d\tA: %d\tI(t): %d\tmode: %s\ttype: %s/%s/%s',
+        (new Date()).toISOString(), size, p.f1, p.f2, p.f3, p.A, p.I, stat[p.m], wtype[p.n1], wtype[p.n2], wtype[p.n3]));
     var arrb = new Uint16Array(chunk, 0, size);
     var arr = new Uint16Array(size);
     for (var j = 0; j < size; j += 2) {
         var pos = (i + j) / (size * 2);
-        if (p.m == 0) {
+        if (p.m === 0) {
             arr[j] = p.A * fun[p.n1](pos * p.f1 * p.I * fun[p.n2](pos * p.f2, j, arrb), j, arrb);
             arr[j + 1] = p.A * fun[p.n1](pos * p.f1 * p.I * fun[p.n2](pos * p.f2, j + 1, arrb), j + 1, arrb);
-        }
-        else if (p.m == 1) {
+        } else if (p.m === 1) {
             arr[j] = p.A * fun[p.n1](pos * p.f1 * p.I * fun[p.n2](pos * p.f2 * fun[p.n3](pos * p.f3, j, arrb), j, arrb), j, arrb);
             arr[j + 1] = p.A * fun[p.n1](pos * p.f1 * p.I * fun[p.n2](pos * p.f2 * fun[p.n3](pos * p.f3, j + 1, arrb), j + 1, arrb), j + 1, arrb);
-        }
-        else if (p.m == 2) {
+        } else if (p.m === 2) {
             arr[j] = p.A * fun[p.n1](pos * p.f1 * p.I * (fun[p.n2](pos * p.f2, j, arrb) + fun[p.n3](pos * p.f3, j, arrb)), j, arrb);
             arr[j + 1] = p.A * fun[p.n1](pos * p.f1 * p.I * (fun[p.n2](pos * p.f2, j + 1, arrb) + fun[p.n3](pos * p.f3, j + 1, arrb)), j + 1, arrb);
-        }
-        else if (p.m == 3) {
+        } else if (p.m === 3) {
             arr[j] = fun[p.n1](pos, j, arrb);
             arr[j + 1] = fun[p.n1](pos, j + 1, arrb);
         }
@@ -170,23 +166,22 @@ GeneratorStream.prototype._read = function (size) {
     var stat = ['osc2->osc1', 'osc3->osc2->osc1', 'osc3->osc1<-osc2', 'osc1'];
     var wtype = ['w', 's', 't'];
 
-    status(util.format('%s\tbuf: %d\tfreq: %d/%d/%d\tA: %d\tI(t): %d\tmode: %s\ttype: %s/%s/%s', (new Date()).toISOString(), size, p.f1, p.f2, p.f3, p.A, p.I, stat[p.m], wtype[p.n1], wtype[p.n2], wtype[p.n3]));
+    status(util.format('%s\tbuf: %d\tfreq: %d/%d/%d\tA: %d\tI(t): %d\tmode: %s\ttype: %s/%s/%s',
+        (new Date()).toISOString(), size, p.f1, p.f2, p.f3, p.A, p.I, stat[p.m], wtype[p.n1], wtype[p.n2], wtype[p.n3]));
+
     var arr = new Uint16Array(size);
     for (var j = 0; j < size; j += 2) {
         var pos = (i + j) / (size * 2);
-        if (p.m == 0) {
+        if (p.m === 0) {
             arr[j] = p.A * fun[p.n1](pos * p.f1 * p.I * fun[p.n2](pos * p.f2));
             arr[j + 1] = p.A * fun[p.n1](pos * p.f1 * p.I * fun[p.n2](pos * p.f2));
-        }
-        else if (p.m == 1) {
+        } else if (p.m === 1) {
             arr[j] = p.A * fun[p.n1](pos * p.f1 * p.I * fun[p.n2](pos * p.f2 * fun[p.n3](pos * p.f3)));
             arr[j + 1] = p.A * fun[p.n1](pos * p.f1 * p.I * fun[p.n2](pos * p.f2 * fun[p.n3](pos * p.f3)));
-        }
-        else if (p.m == 2) {
+        } else if (p.m === 2) {
             arr[j] = p.A * fun[p.n1](pos * p.f1 * p.I * (fun[p.n2](pos * p.f2) + fun[p.n3](pos * p.f3)));
             arr[j + 1] = p.A * fun[p.n1](pos * p.f1 * p.I * (fun[p.n2](pos * p.f2) + fun[p.n3](pos * p.f3)));
-        }
-        else if (p.m == 3) {
+        } else if (p.m === 3) {
             arr[j] = fun[p.n1](pos);
             arr[j + 1] = fun[p.n1](pos);
         }
@@ -196,18 +191,15 @@ GeneratorStream.prototype._read = function (size) {
     i += size;
 };
 
-
-
 if (file) {
-    file.once('readable', function () {
+    file.once('readable', () => {
         var myFile = fs.createWriteStream('output.wav');
         var rs = new ModulateStream();
         file.pipe(rs);
         rs.pipe(speaker);
         rs.pipe(myFile);
     });
-}
-else {
+} else {
     var myFile = fs.createWriteStream('output.wav');
     var rs = new GeneratorStream();
     rs.pipe(speaker);
