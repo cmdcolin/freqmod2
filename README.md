@@ -3,12 +3,16 @@
 
 ## Usage
 
+Oscillators only
+
+    node freqmod.js
+
+With external sound modulation
 
     node freqmod.js file.wav
 
 ## Features
 
-- Can modulate an external file, or use fm synthesis with the oscillators by themselves
 - Uses blessed library for a terminal "interface" like ncurses
 - Uses custom implementation of a NodeJS stream to output audio data to speaker
 - Also outputs audio to a raw wave file output.wav
@@ -17,6 +21,6 @@
 
 ## Links
 
-https://github.com/chjj/blessed
-https://github.com/TooTallNate/node-speaker
-https://github.com/cmdcolin/freqmod
+* https://github.com/chjj/blessed
+* https://github.com/TooTallNate/node-speaker
+* https://github.com/cmdcolin/freqmod
