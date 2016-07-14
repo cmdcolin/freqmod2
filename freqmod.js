@@ -39,14 +39,15 @@ var file;
 if (args[0]) {
     file = fs.createReadStream(args[0]);
 }
-var screen = blessed.screen(),
-    body = blessed.box({
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        tags: true,
-    });
+
+var screen = blessed.screen();
+var body = blessed.box({
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    tags: true,
+});
 
 screen.append(body);
 
@@ -86,6 +87,7 @@ function log(text) {
     screen.render();
 }
 
+var Generator = stream.Readable;
 
 var Transform = stream.Transform;
 
@@ -99,6 +101,18 @@ function ModulateStream(options) {
     Transform.call(this, options);
 }
 util.inherits(ModulateStream, Transform);
+
+
+function GeneratorStream(options) {
+    // allow use without new
+    if (!(this instanceof GeneratorStream)) {
+        return new GeneratorStream(options);
+    }
+
+    // init Transform
+    Generator.call(this, options);
+}
+util.inherits(GeneratorStream, Generator);
 
 
 
@@ -116,7 +130,7 @@ function input(pos, j, arr) {
 }
 
 var i = 0;
-ModulateStream.prototype._transform = function (chunk, encoding, callback) {
+ModulateStream.prototype._transform = function (size) {
     var size = chunk.length;
     var fun = [wave, square, triangle, input];
     var stat = ['osc2->osc1', 'osc3->osc2->osc1', 'osc3->osc1<-osc2', 'osc1'];
@@ -151,6 +165,39 @@ ModulateStream.prototype._transform = function (chunk, encoding, callback) {
 };
 
 
+GeneratorStream.prototype._read = function (size) {
+    var fun = [wave, square, triangle];
+    var stat = ['osc2->osc1', 'osc3->osc2->osc1', 'osc3->osc1<-osc2', 'osc1'];
+    var wtype = ['w', 's', 't'];
+
+    status(util.format('%s\tbuf: %d\tfreq: %d/%d/%d\tA: %d\tI(t): %d\tmode: %s\ttype: %s/%s/%s', (new Date()).toISOString(), size, p.f1, p.f2, p.f3, p.A, p.I, stat[p.m], wtype[p.n1], wtype[p.n2], wtype[p.n3]));
+    var arr = new Uint16Array(size);
+    for (var j = 0; j < size; j += 2) {
+        var pos = (i + j) / (size * 2);
+        if (p.m == 0) {
+            arr[j] = p.A * fun[p.n1](pos * p.f1 * p.I * fun[p.n2](pos * p.f2));
+            arr[j + 1] = p.A * fun[p.n1](pos * p.f1 * p.I * fun[p.n2](pos * p.f2));
+        }
+        else if (p.m == 1) {
+            arr[j] = p.A * fun[p.n1](pos * p.f1 * p.I * fun[p.n2](pos * p.f2 * fun[p.n3](pos * p.f3)));
+            arr[j + 1] = p.A * fun[p.n1](pos * p.f1 * p.I * fun[p.n2](pos * p.f2 * fun[p.n3](pos * p.f3)));
+        }
+        else if (p.m == 2) {
+            arr[j] = p.A * fun[p.n1](pos * p.f1 * p.I * (fun[p.n2](pos * p.f2) + fun[p.n3](pos * p.f3)));
+            arr[j + 1] = p.A * fun[p.n1](pos * p.f1 * p.I * (fun[p.n2](pos * p.f2) + fun[p.n3](pos * p.f3)));
+        }
+        else if (p.m == 3) {
+            arr[j] = fun[p.n1](pos);
+            arr[j + 1] = fun[p.n1](pos);
+        }
+    }
+    var buf = Buffer.from(arr);
+    this.push(buf);
+    i += size;
+};
+
+
+
 if (file) {
     file.once('readable', function () {
         var myFile = fs.createWriteStream('output.wav');
@@ -162,7 +209,7 @@ if (file) {
 }
 else {
     var myFile = fs.createWriteStream('output.wav');
-    var rs = new ModulateStream();
+    var rs = new GeneratorStream();
     rs.pipe(speaker);
     rs.pipe(myFile);
 }
