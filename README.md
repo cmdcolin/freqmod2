@@ -4,11 +4,11 @@
 ## Usage
 
 
-    node freqmod.js
+    node freqmod.js file.wav
 
 ## Features
 
-
+- Can modulate an external file, or use fm synthesis with the oscillators by themselves
 - Uses blessed library for a terminal "interface" like ncurses
 - Uses custom implementation of a NodeJS stream to output audio data to speaker
 - Also outputs audio to a raw wave file output.wav
